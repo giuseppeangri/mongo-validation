@@ -41,15 +41,21 @@ function mongoValidation() {
 
     }
 
-    function checkExist(modelName, fieldName, fieldValue) {
+    function checkExist(modelName, fieldName, fieldValue, populate) {
 
         var promise = new Promise(function(resolve, reject) {
 
             var conditions = {};
             conditions[fieldName] = fieldValue;
 
-            mongoose.model(modelName)
-                .findOne(conditions)
+            var query = mongoose.model(modelName)
+                .findOne(conditions);
+
+            if(populate) {
+                query.populate(populate);
+            }
+            
+            query
                 .exec()
                 .then(function(result) {
                     resolve(result);
@@ -85,7 +91,9 @@ function mongoValidation() {
                 });
             }
 
-            checkExist(modelName, fieldName, fieldValue)
+            var populate  = (options.populate && (typeof options.populate === 'string') ) ? options.populate : null;
+            
+            checkExist(modelName, fieldName, fieldValue, populate)
                 .then(function(result) {
                     
                     if(result) {
